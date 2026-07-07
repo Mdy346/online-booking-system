@@ -1,151 +1,255 @@
-import type { User, ServiceItem, ScheduleSlot, Appointment, Comment, MerchantStats } from "../types";
-import { mockUsers, mockServices, mockSchedules, mockAppointments, mockComments, mockMerchantStats } from "../mock/data";
+Ôªøimport type { User, ServiceItem, ScheduleSlot, Appointment, Comment, MerchantStats } from "../types";
 
-/** ƒ£ƒ‚Õ¯¬Á—”≥Ÿ */
+/**
+ * API Â±Ç --- ÊîØÊåÅ Mock / ÁúüÂÆûÂêéÁ´Ø ÂèåÊ®°Âºè
+ * ÂºÄÂèëÊó∂ USE_MOCK = true   -> Áî®Êú¨Âú∞ÂÅáÊï∞ÊçÆÔºà‰∏ç‰æùËµñÂêéÁ´ØÔºâ
+ * ËÅîË∞ÉÊó∂ USE_MOCK = false  -> Ë∞ÉÁî®ÂêéÁ´Ø Spring Boot API
+ */
+const USE_MOCK = true;
+
+/** ÂêéÁ´ØÊúçÂä°Âú∞ÂùÄÔºàÂêéÁ´ØÈªòËÆ§Á´ØÂè£ 8080Ôºâ */
+const API_BASE = "http://localhost:8080";
+
+// --- HTTP ËØ∑Ê±ÇÂ∑•ÂÖ∑ ---
+
+interface ApiResponse<T> {
+  code: number;
+  message: string;
+  data: T;
+}
+
+async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const token = localStorage.getItem("token");
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...((options?.headers as Record<string, string>) || {}),
+  };
+  if (token) {
+    headers["Authorization"] = "Bearer " + token;
+  }
+  const res = await fetch(API_BASE + path, { ...options, headers });
+  const json: ApiResponse<T> = await res.json();
+  if (json.code !== 200) {
+    throw new Error(json.message || "ËØ∑Ê±ÇÂ§±Ë¥•");
+  }
+  return json.data;
+}
+
 function delay(ms = 300): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-// ©§©§©§ ”√ªßœ‡πÿ ©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§
+// Âª∂ËøüÂä†ËΩΩ Mock Êï∞ÊçÆ
+let _mockLoaded = false;
+let _mockUsers: User[] = [];
+let _mockServices: ServiceItem[] = [];
+let _mockSchedules: ScheduleSlot[] = [];
+let _mockAppointments: Appointment[] = [];
+let _mockComments: Comment[] = [];
+let _mockMerchantStats: Record<number, MerchantStats> = {};
+
+async function ensureMock() {
+  if (!_mockLoaded) {
+    const m = await import("../mock/data");
+    _mockUsers = m.mockUsers;
+    _mockServices = m.mockServices;
+    _mockSchedules = m.mockSchedules;
+    _mockAppointments = m.mockAppointments;
+    _mockComments = m.mockComments;
+    _mockMerchantStats = m.mockMerchantStats;
+    _mockLoaded = true;
+  }
+}
+
+// --- Áî®Êà∑Áõ∏ÂÖ≥ ---
 
 export async function login(username: string, password: string): Promise<{ token: string; user: User }> {
-  await delay();
-  const user = mockUsers.find((u) => u.username === username);
-  if (!user) throw new Error("’À∫≈ªÚ√‹¬Î¥ÌŒÛ");
-  // √‹¬Î≤ª–£—È mock£¨Ωˆ◊ˆ—› æ
-  return { token: `mock-token-${user.userId}`, user };
+  if (USE_MOCK) {
+    await delay();
+    await ensureMock();
+    const user = _mockUsers.find((u) => u.username === username);
+    if (!user) throw new Error("Ë¥¶Âè∑ÊàñÂØÜÁ†ÅÈîôËØØ");
+    return { token: "mock-token-" + user.userId, user };
+  }
+  const data = await request<{ token: string; user: { userId: number; username: string; phone: string; role: string; registerTime: string } }>("/api/auth/login", {
+    method: "POST",
+    body: JSON.stringify({ username, password }),
+  });
+  return {
+    token: data.token,
+    user: {
+      userId: data.user.userId,
+      username: data.user.username,
+      phone: data.user.phone,
+      role: data.user.role as User["role"],
+      registerTime: data.user.registerTime,
+    },
+  };
 }
 
 export async function register(data: { username: string; password: string; phone: string; role: "USER" | "MERCHANT" }): Promise<User> {
-  await delay();
-  const newUser: User = {
-    userId: mockUsers.length + 1,
-    username: data.username,
-    phone: data.phone,
-    role: data.role,
-    registerTime: new Date().toISOString(),
+  if (USE_MOCK) {
+    await delay();
+    return {
+      userId: Date.now(),
+      username: data.username,
+      phone: data.phone,
+      role: data.role,
+      registerTime: new Date().toISOString(),
+    };
+  }
+  const resp = await request<{ token: string; user: { userId: number; username: string; phone: string; role: string; registerTime: string } }>("/api/auth/register", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+  return {
+    userId: resp.user.userId,
+    username: resp.user.username,
+    phone: resp.user.phone,
+    role: resp.user.role as User["role"],
+    registerTime: resp.user.registerTime,
   };
-  return newUser;
 }
 
-// ©§©§©§ ∑˛ŒÒœ‡πÿ ©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§
+// --- ÊúçÂä°Áõ∏ÂÖ≥ ---
 
-export async function getServiceList(params?: {
-  keyword?: string;
-  category?: string;
-  sortBy?: "price" | "rating";
-}): Promise<ServiceItem[]> {
-  await delay();
-  let list = [...mockServices];
-
-  if (params?.keyword) {
-    const kw = params.keyword.toLowerCase();
-    list = list.filter(
-      (s) =>
-        s.serviceName.toLowerCase().includes(kw) ||
-        s.description.toLowerCase().includes(kw) ||
-        s.merchantName.toLowerCase().includes(kw)
-    );
+export async function getServiceList(params?: { keyword?: string; category?: string; sortBy?: "price" | "rating" }): Promise<ServiceItem[]> {
+  if (USE_MOCK) {
+    await delay();
+    await ensureMock();
+    let list = [..._mockServices];
+    if (params?.keyword) {
+      const kw = params.keyword.toLowerCase();
+      list = list.filter((s) => s.serviceName.toLowerCase().includes(kw) || s.description.toLowerCase().includes(kw) || s.merchantName.toLowerCase().includes(kw));
+    }
+    if (params?.category) list = list.filter((s) => s.category === params.category);
+    if (params?.sortBy === "price") list.sort((a, b) => a.price - b.price);
+    else if (params?.sortBy === "rating") list.sort((a, b) => b.rating - a.rating);
+    return list;
   }
-  if (params?.category) {
-    list = list.filter((s) => s.category === params.category);
-  }
-  if (params?.sortBy === "price") {
-    list.sort((a, b) => a.price - b.price);
-  } else if (params?.sortBy === "rating") {
-    list.sort((a, b) => b.rating - a.rating);
-  }
-
-  return list;
+  const qs = new URLSearchParams();
+  if (params?.keyword) qs.set("keyword", params.keyword);
+  if (params?.category) qs.set("category", params.category);
+  if (params?.sortBy) qs.set("sortBy", params.sortBy);
+  const q = qs.toString();
+  return request<ServiceItem[]>("/api/services" + (q ? "?" + q : ""));
 }
 
 export async function getServiceDetail(serviceId: number): Promise<ServiceItem | null> {
-  await delay();
-  return mockServices.find((s) => s.serviceId === serviceId) ?? null;
+  if (USE_MOCK) {
+    await delay();
+    await ensureMock();
+    return _mockServices.find((s) => s.serviceId === serviceId) ?? null;
+  }
+  try {
+    return await request<ServiceItem>("/api/services/" + serviceId);
+  } catch {
+    return null;
+  }
 }
 
 export async function getSchedules(serviceId: number): Promise<ScheduleSlot[]> {
-  await delay();
-  return mockSchedules.filter((s) => s.serviceId === serviceId && s.available);
+  if (USE_MOCK) {
+    await delay();
+    await ensureMock();
+    return _mockSchedules.filter((s) => s.serviceId === serviceId && s.available);
+  }
+  const detail = (await request<any>("/api/services/" + serviceId)) as any;
+  return (detail && detail.schedules) || [];
 }
 
-// ©§©§©§ ‘§‘ºœ‡πÿ ©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§
+// --- È¢ÑÁ∫¶Áõ∏ÂÖ≥ ---
 
-export async function createAppointment(data: {
-  userId: number;
-  serviceId: number;
-  scheduleId: number;
-}): Promise<Appointment> {
-  await delay();
-  const service = mockServices.find((s) => s.serviceId === data.serviceId)!;
-  const slot = mockSchedules.find((s) => s.scheduleId === data.scheduleId)!;
-
-  const appointment: Appointment = {
-    appointmentId: mockAppointments.length + 1,
-    userId: data.userId,
-    serviceId: data.serviceId,
-    scheduleId: data.scheduleId,
-    status: 1,
-    createTime: new Date().toISOString(),
-    serviceName: service.serviceName,
-    merchantName: service.merchantName,
-    startTime: slot.startTime,
-    endTime: slot.endTime,
-    price: service.price,
-  };
-  return appointment;
+export async function createAppointment(data: { userId: number; serviceId: number; scheduleId: number }): Promise<Appointment> {
+  if (USE_MOCK) {
+    await delay();
+    await ensureMock();
+    const service = _mockServices.find((s) => s.serviceId === data.serviceId)!;
+    const slot = _mockSchedules.find((s) => s.scheduleId === data.scheduleId)!;
+    return {
+      appointmentId: _mockAppointments.length + 1,
+      userId: data.userId,
+      serviceId: data.serviceId,
+      scheduleId: data.scheduleId,
+      status: 1,
+      createTime: new Date().toISOString(),
+      serviceName: service.serviceName,
+      merchantName: service.merchantName,
+      startTime: slot.startTime,
+      endTime: slot.endTime,
+      price: service.price,
+    };
+  }
+  return request<Appointment>("/api/appointments?userId=" + data.userId, {
+    method: "POST",
+    body: JSON.stringify({ serviceId: data.serviceId, scheduleId: data.scheduleId }),
+  });
 }
 
 export async function getUserAppointments(userId: number): Promise<Appointment[]> {
-  await delay();
-  return mockAppointments.filter((a) => a.userId === userId);
+  if (USE_MOCK) {
+    await delay();
+    await ensureMock();
+    return _mockAppointments.filter((a) => a.userId === userId);
+  }
+  return request<Appointment[]>("/api/appointments/user/" + userId);
 }
 
 export async function cancelAppointment(appointmentId: number): Promise<void> {
-  await delay();
-  // mock update
+  if (USE_MOCK) {
+    await delay();
+    return;
+  }
+  const userId = Number(localStorage.getItem("userId") ?? 0);
+  await request<void>("/api/appointments/" + appointmentId + "/cancel?userId=" + userId, { method: "PUT" });
 }
 
 export async function getMerchantAppointments(merchantId: number): Promise<Appointment[]> {
-  await delay();
-  const serviceIds = mockServices.filter((s) => s.merchantId === merchantId).map((s) => s.serviceId);
-  return mockAppointments.filter((a) => serviceIds.includes(a.serviceId));
+  if (USE_MOCK) {
+    await delay();
+    await ensureMock();
+    const serviceIds = _mockServices.filter((s) => s.merchantId === merchantId).map((s) => s.serviceId);
+    return _mockAppointments.filter((a) => serviceIds.includes(a.serviceId));
+  }
+  return request<Appointment[]>("/api/appointments/merchant/" + merchantId);
 }
 
 export async function confirmAppointment(appointmentId: number): Promise<void> {
-  await delay();
+  if (USE_MOCK) { await delay(); return; }
+  await request<void>("/api/appointments/" + appointmentId + "/confirm", { method: "PUT" });
 }
 
 export async function rejectAppointment(appointmentId: number): Promise<void> {
-  await delay();
+  if (USE_MOCK) { await delay(); return; }
+  await request<void>("/api/appointments/" + appointmentId + "/reject", { method: "PUT" });
 }
 
-// ©§©§©§ ∆¿º€œ‡πÿ ©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§©§
+// --- ËØÑ‰ª∑Áõ∏ÂÖ≥ ---
 
-export async function submitComment(data: {
-  appointmentId: number;
-  ratingStar: number;
-  content: string;
-}): Promise<Comment> {
-  await delay();
-  const comment: Comment = {
-    commentId: mockComments.length + 1,
-    appointmentId: data.appointmentId,
-    ratingStar: data.ratingStar,
-    content: data.content,
-    commentTime: new Date().toISOString(),
-    username: "µ±«∞”√ªß",
-  };
-  return comment;
+export async function submitComment(data: { appointmentId: number; ratingStar: number; content: string }): Promise<Comment> {
+  if (USE_MOCK) {
+    await delay();
+    await ensureMock();
+    return {
+      commentId: _mockComments.length + 1,
+      appointmentId: data.appointmentId,
+      ratingStar: data.ratingStar,
+      content: data.content,
+      commentTime: new Date().toISOString(),
+      username: "ÂΩìÂâçÁî®Êà∑",
+    };
+  }
+  return request<Comment>("/api/comments", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
 }
 
 export async function getMerchantStats(merchantId: number): Promise<MerchantStats> {
-  await delay();
-  return mockMerchantStats[merchantId] ?? {
-    totalAppointments: 0,
-    completedAppointments: 0,
-    cancelledAppointments: 0,
-    averageRating: 0,
-    dailyTrend: [],
-  };
+  if (USE_MOCK) {
+    await delay();
+    await ensureMock();
+    return _mockMerchantStats[merchantId] ?? { totalAppointments: 0, completedAppointments: 0, cancelledAppointments: 0, averageRating: 0, dailyTrend: [] };
+  }
+  return request<MerchantStats>("/api/stats/merchant/" + merchantId);
 }

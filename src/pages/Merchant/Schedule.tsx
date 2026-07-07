@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+ï»¿import { useEffect, useState } from "react";
 import { Clock, CheckCircle, XCircle } from "lucide-react";
 import type { Appointment } from "../../types";
 import { getMerchantAppointments, confirmAppointment, rejectAppointment } from "../../api";
@@ -37,7 +37,7 @@ export default function MerchantSchedule() {
     );
   }
 
-  // ÏÈÕ¹Ê¾´ıÈ·ÈÏ
+  // å…ˆå±•ç¤ºå¾…ç¡®è®¤
   const pending = appointments.filter((a) => a.status === 1);
   const others = appointments.filter((a) => a.status !== 1);
 
@@ -45,13 +45,13 @@ export default function MerchantSchedule() {
     <div>
       <h1 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
         <Clock className="w-6 h-6 text-blue-600" />
-        Ô¤Ô¼¹ÜÀí
+        é¢„çº¦ç®¡ç†
       </h1>
 
-      {/* ´ıÈ·ÈÏ */}
+      {/* å¾…ç¡®è®¤ */}
       {pending.length > 0 && (
         <div className="mb-8">
-          <h2 className="font-semibold text-yellow-600 mb-3">´ıÈ·ÈÏ£¨{pending.length}£©</h2>
+          <h2 className="font-semibold text-yellow-600 mb-3">å¾…ç¡®è®¤ï¼ˆ{pending.length}ï¼‰</h2>
           <div className="space-y-3">
             {pending.map((apt) => (
               <div key={apt.appointmentId} className="bg-white rounded-lg border border-yellow-200 p-4">
@@ -62,7 +62,7 @@ export default function MerchantSchedule() {
                       {formatTime(apt.startTime)} - {formatTime(apt.endTime)}
                     </p>
                     <p className="text-sm text-gray-500">
-                      ÓÃ»§ID: {apt.userId}
+                      ç”¨æˆ·ID: {apt.userId}
                     </p>
                   </div>
                   <div className="text-right shrink-0">
@@ -73,14 +73,14 @@ export default function MerchantSchedule() {
                         className="flex items-center gap-1 text-xs bg-green-500 text-white px-3 py-1.5 rounded-lg hover:bg-green-600"
                       >
                         <CheckCircle className="w-3 h-3" />
-                        È·ÈÏ
+                        ç¡®è®¤
                       </button>
                       <button
                         onClick={() => handleReject(apt.appointmentId)}
                         className="flex items-center gap-1 text-xs bg-red-500 text-white px-3 py-1.5 rounded-lg hover:bg-red-600"
                       >
                         <XCircle className="w-3 h-3" />
-                        ¾Ü¾ø
+                        æ‹’ç»
                       </button>
                     </div>
                   </div>
@@ -91,11 +91,11 @@ export default function MerchantSchedule() {
         </div>
       )}
 
-      {/* ÀúÊ·Ô¤Ô¼ */}
+      {/* å†å²é¢„çº¦ */}
       <div>
-        <h2 className="font-semibold text-gray-700 mb-3">ÀúÊ·¼ÇÂ¼</h2>
+        <h2 className="font-semibold text-gray-700 mb-3">å†å²è®°å½•</h2>
         {others.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-10">ÔİÎŞÀúÊ·¼ÇÂ¼</p>
+          <p className="text-sm text-gray-400 text-center py-10">æš‚æ— å†å²è®°å½•</p>
         ) : (
           <div className="space-y-2">
             {others.map((apt) => (

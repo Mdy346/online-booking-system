@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+ï»¿import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BarChart3, CalendarCheck, XCircle, Star, TrendingUp } from "lucide-react";
 import type { MerchantStats } from "../../types";
@@ -34,15 +34,15 @@ export default function MerchantDashboard() {
   if (!stats) return null;
 
   const cards = [
-    { label: "×ÜÔ¤Ô¼Êı", value: stats.totalAppointments, icon: CalendarCheck, color: "text-blue-600 bg-blue-50" },
-    { label: "ÒÑÍê³É", value: stats.completedAppointments, icon: TrendingUp, color: "text-green-600 bg-green-50" },
-    { label: "ÒÑÈ¡Ïû", value: stats.cancelledAppointments, icon: XCircle, color: "text-red-500 bg-red-50" },
-    { label: "Æ½¾ùÆÀ·Ö", value: stats.averageRating.toFixed(1), icon: Star, color: "text-yellow-500 bg-yellow-50" },
+    { label: "æ€»é¢„çº¦æ•°", value: stats.totalAppointments, icon: CalendarCheck, color: "text-blue-600 bg-blue-50" },
+    { label: "å·²å®Œæˆ", value: stats.completedAppointments, icon: TrendingUp, color: "text-green-600 bg-green-50" },
+    { label: "å·²å–æ¶ˆ", value: stats.cancelledAppointments, icon: XCircle, color: "text-red-500 bg-red-50" },
+    { label: "å¹³å‡è¯„åˆ†", value: stats.averageRating.toFixed(1), icon: Star, color: "text-yellow-500 bg-yellow-50" },
   ];
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Êı¾İ¸ÅÀÀ</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">æ•°æ®æ¦‚è§ˆ</h1>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {cards.map((c) => {
@@ -59,11 +59,11 @@ export default function MerchantDashboard() {
         })}
       </div>
 
-      {/* Ô¤Ô¼Ç÷ÊÆ */}
+      {/* é¢„çº¦è¶‹åŠ¿ */}
       <div className="bg-white rounded-lg border border-gray-200 p-5">
         <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
           <BarChart3 className="w-5 h-5 text-blue-600" />
-          ½ü 14 ÌìÔ¤Ô¼Ç÷ÊÆ
+          è¿‘ 14 å¤©é¢„çº¦è¶‹åŠ¿
         </h2>
         <div className="flex items-end gap-1 h-32">
           {stats.dailyTrend.map((d) => {

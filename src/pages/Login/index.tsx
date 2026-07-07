@@ -1,4 +1,4 @@
-import { useState } from "react";
+ï»¿import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Calendar, Eye, EyeOff } from "lucide-react";
 import { login } from "../../api";
@@ -17,16 +17,18 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
     if (!username || !password) {
-      setError("ÇëÌîĞ´ÕËºÅºÍÃÜÂë");
+      setError("è¯·å¡«å†™è´¦å·å’Œå¯†ç ");
       return;
     }
     setLoading(true);
     try {
-      const { user } = await login(username, password);
+      const { token, user } = await login(username, password);
+      localStorage.setItem("token", token);
+      localStorage.setItem("userId", String(user.userId));
       setCurrentUser(user);
       navigate(user.role === "MERCHANT" ? "/merchant" : "/services");
     } catch {
-      setError("ÕËºÅ»òÃÜÂë´íÎó£¨ÌáÊ¾£º¿ÉÓÃ alice / bob_merchant£©");
+      setError("è´¦å·æˆ–å¯†ç é”™è¯¯ï¼ˆæç¤ºï¼šå¯ç”¨ alice / bob_merchantï¼‰");
     } finally {
       setLoading(false);
     }
@@ -38,31 +40,31 @@ export default function LoginPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <Calendar className="w-10 h-10 text-blue-600 mx-auto" />
-          <h1 className="text-2xl font-bold mt-3 text-gray-900">µÇÂ¼</h1>
-          <p className="text-sm text-gray-500 mt-1">µÇÂ¼ÒÔÔ¤Ô¼ĞÄÒÇµÄ·şÎñ</p>
+          <h1 className="text-2xl font-bold mt-3 text-gray-900">ç™»å½•</h1>
+          <p className="text-sm text-gray-500 mt-1">ç™»å½•ä»¥é¢„çº¦å¿ƒä»ªçš„æœåŠ¡</p>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">ÕËºÅ</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">è´¦å·</label>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="ÊäÈëÓÃ»§Ãû"
+              placeholder="è¾“å…¥ç”¨æˆ·å"
               className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">ÃÜÂë</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">å¯†ç </label>
             <div className="relative">
               <input
                 type={showPwd ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="ÊäÈëÃÜÂë"
+                placeholder="è¾“å…¥å¯†ç "
                 className="w-full border border-gray-300 rounded-lg px-3 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
               <button
@@ -82,22 +84,22 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
           >
-            {loading ? "µÇÂ¼ÖĞ..." : "µÇÂ¼"}
+            {loading ? "ç™»å½•ä¸­..." : "ç™»å½•"}
           </button>
         </form>
 
         <p className="text-center text-sm text-gray-500 mt-6">
-          »¹Ã»ÓĞÕËºÅ£¿{" "}
+          è¿˜æ²¡æœ‰è´¦å·ï¼Ÿ{" "}
           <Link to="/register" className="text-blue-600 hover:underline">
-            Á¢¼´×¢²á
+            ç«‹å³æ³¨å†Œ
           </Link>
         </p>
 
         {/* Test hint */}
         <div className="mt-6 p-3 bg-gray-50 rounded-lg text-xs text-gray-400 space-y-1">
-          <p>²âÊÔÕËºÅ£º</p>
-          <p>ÓÃ»§£ºalice / ÈÎÒâÃÜÂë</p>
-          <p>ÉÌ¼Ò£ºbob_merchant / ÈÎÒâÃÜÂë</p>
+          <p>æµ‹è¯•è´¦å·ï¼š</p>
+          <p>ç”¨æˆ·ï¼šalice / ä»»æ„å¯†ç </p>
+          <p>å•†å®¶ï¼šbob_merchant / ä»»æ„å¯†ç </p>
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 import { Star } from "lucide-react";
 import type { ServiceItem } from "../types";
 import { formatPrice } from "../utils";

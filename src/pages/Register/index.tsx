@@ -1,4 +1,4 @@
-import { useState } from "react";
+ï»¿import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Calendar } from "lucide-react";
 import { register } from "../../api";
@@ -16,11 +16,11 @@ export default function RegisterPage() {
     e.preventDefault();
     setError("");
     if (!form.username || !form.password || !form.phone) {
-      setError("ÇëÌîĞ´ËùÓĞ×Ö¶Î");
+      setError("è¯·å¡«å†™æ‰€æœ‰å­—æ®µ");
       return;
     }
     if (form.password.length < 6) {
-      setError("ÃÜÂëÖÁÉÙ 6 Î»");
+      setError("å¯†ç è‡³å°‘ 6 ä½");
       return;
     }
     setLoading(true);
@@ -28,7 +28,7 @@ export default function RegisterPage() {
       await register(form);
       navigate("/login");
     } catch {
-      setError("×¢²áÊ§°Ü£¬ÇëÉÔºóÖØÊÔ");
+      setError("æ³¨å†Œå¤±è´¥ï¼Œè¯·ç¨åé‡è¯•");
     } finally {
       setLoading(false);
     }
@@ -39,46 +39,46 @@ export default function RegisterPage() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <Calendar className="w-10 h-10 text-blue-600 mx-auto" />
-          <h1 className="text-2xl font-bold mt-3 text-gray-900">×¢²á</h1>
-          <p className="text-sm text-gray-500 mt-1">´´½¨ÕËºÅ¿ªÊ¼Ê¹ÓÃÔ¤Ô¼·şÎñ</p>
+          <h1 className="text-2xl font-bold mt-3 text-gray-900">æ³¨å†Œ</h1>
+          <p className="text-sm text-gray-500 mt-1">åˆ›å»ºè´¦å·å¼€å§‹ä½¿ç”¨é¢„çº¦æœåŠ¡</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">ÓÃ»§Ãû</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">ç”¨æˆ·å</label>
             <input
               type="text"
               value={form.username}
               onChange={(e) => update("username", e.target.value)}
-              placeholder="ÊäÈëÓÃ»§Ãû"
+              placeholder="è¾“å…¥ç”¨æˆ·å"
               className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">ÊÖ»úºÅ</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">æ‰‹æœºå·</label>
             <input
               type="tel"
               value={form.phone}
               onChange={(e) => update("phone", e.target.value)}
-              placeholder="ÊäÈëÊÖ»úºÅ"
+              placeholder="è¾“å…¥æ‰‹æœºå·"
               className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">ÃÜÂë</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">å¯†ç </label>
             <input
               type="password"
               value={form.password}
               onChange={(e) => update("password", e.target.value)}
-              placeholder="ÖÁÉÙ 6 Î»"
+              placeholder="è‡³å°‘ 6 ä½"
               className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">×¢²áÉí·İ</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">æ³¨å†Œèº«ä»½</label>
             <div className="flex gap-2">
               {(["USER", "MERCHANT"] as const).map((r) => (
                 <button
@@ -92,7 +92,7 @@ export default function RegisterPage() {
                       : "bg-white text-gray-600 border-gray-300 hover:border-blue-400"
                   )}
                 >
-                  {r === "USER" ? "ÆÕÍ¨ÓÃ»§" : "ÉÌ¼Ò"}
+                  {r === "USER" ? "æ™®é€šç”¨æˆ·" : "å•†å®¶"}
                 </button>
               ))}
             </div>
@@ -105,14 +105,14 @@ export default function RegisterPage() {
             disabled={loading}
             className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
           >
-            {loading ? "×¢²áÖĞ..." : "×¢²á"}
+            {loading ? "æ³¨å†Œä¸­..." : "æ³¨å†Œ"}
           </button>
         </form>
 
         <p className="text-center text-sm text-gray-500 mt-6">
-          ÒÑÓĞÕËºÅ£¿{" "}
+          å·²æœ‰è´¦å·ï¼Ÿ{" "}
           <Link to="/login" className="text-blue-600 hover:underline">
-            Á¢¼´µÇÂ¼
+            ç«‹å³ç™»å½•
           </Link>
         </p>
       </div>
