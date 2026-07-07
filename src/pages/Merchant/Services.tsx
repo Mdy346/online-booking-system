@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+ï»¿import { useEffect, useState } from "react";
 import { Plus, Edit2 } from "lucide-react";
 import type { ServiceItem } from "../../types";
 import { getServiceList } from "../../api";
@@ -30,17 +30,17 @@ export default function MerchantServices() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">·şÎñ¹ÜÀí</h1>
+        <h1 className="text-2xl font-bold text-gray-900">æœåŠ¡ç®¡ç†</h1>
         <button className="flex items-center gap-1.5 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
           <Plus className="w-4 h-4" />
-          ·¢²¼·şÎñ
+          å‘å¸ƒæœåŠ¡
         </button>
       </div>
 
       {services.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
-          <p className="text-lg">»¹Ã»ÓĞ·¢²¼·şÎñ</p>
-          <p className="text-sm mt-1">µã»÷ÉÏ·½°´Å¥·¢²¼ÄãµÄµÚÒ»¸ö·şÎñ</p>
+          <p className="text-lg">è¿˜æ²¡æœ‰å‘å¸ƒæœåŠ¡</p>
+          <p className="text-sm mt-1">ç‚¹å‡»ä¸Šæ–¹æŒ‰é’®å‘å¸ƒä½ çš„ç¬¬ä¸€ä¸ªæœåŠ¡</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -49,7 +49,7 @@ export default function MerchantServices() {
               <div>
                 <h3 className="font-semibold text-gray-900">{svc.serviceName}</h3>
                 <p className="text-sm text-gray-500 mt-0.5">
-                  {svc.category} ¡¤ {formatPrice(svc.price)} ¡¤ ÆÀ·Ö {svc.rating}
+                  {svc.category} Â· {formatPrice(svc.price)} Â· è¯„åˆ† {svc.rating}
                 </p>
               </div>
               <button className="text-gray-400 hover:text-blue-600 transition-colors">

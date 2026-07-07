@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+ï»¿import { Link, useNavigate } from "react-router-dom";
 import { Calendar, LogOut, Menu, X, Store, User } from "lucide-react";
 import { useState } from "react";
 import { useAppStore } from "../store";
@@ -11,6 +11,8 @@ export default function Navbar() {
 
   const handleLogout = () => {
     setCurrentUser(null);
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
     navigate("/login");
   };
 
@@ -20,23 +22,23 @@ export default function Navbar() {
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 text-blue-600 font-bold text-lg">
           <Calendar className="w-6 h-6" />
-          <span>Ô¤Ô¼ÏµÍ³</span>
+          <span>é¢„çº¦ç³»ç»Ÿ</span>
         </Link>
 
         {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
           <Link to="/services" className="hover:text-blue-600 transition-colors">
-            ä¯ÀÀ·şÎñ
+            æµè§ˆæœåŠ¡
           </Link>
           {currentUser ? (
             <>
               <Link to="/my-appointments" className="hover:text-blue-600 transition-colors">
-                ÎÒµÄÔ¤Ô¼
+                æˆ‘çš„é¢„çº¦
               </Link>
               {currentUser.role === "MERCHANT" && (
                 <Link to="/merchant" className="hover:text-blue-600 transition-colors flex items-center gap-1">
                   <Store className="w-4 h-4" />
-                  ÉÌ¼ÒÖĞĞÄ
+                  å•†å®¶ä¸­å¿ƒ
                 </Link>
               )}
               <div className="flex items-center gap-3 ml-4 pl-4 border-l border-gray-200">
@@ -54,7 +56,7 @@ export default function Navbar() {
               to="/login"
               className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
             >
-              µÇÂ¼
+              ç™»å½•
             </Link>
           )}
         </div>
@@ -69,27 +71,27 @@ export default function Navbar() {
       {menuOpen && (
         <div className="md:hidden border-t border-gray-100 bg-white px-4 py-4 space-y-3 text-sm font-medium">
           <Link to="/services" className="block py-1" onClick={() => setMenuOpen(false)}>
-            ä¯ÀÀ·şÎñ
+            æµè§ˆæœåŠ¡
           </Link>
           {currentUser ? (
             <>
               <Link to="/my-appointments" className="block py-1" onClick={() => setMenuOpen(false)}>
-                ÎÒµÄÔ¤Ô¼
+                æˆ‘çš„é¢„çº¦
               </Link>
               {currentUser.role === "MERCHANT" && (
                 <Link to="/merchant" className="block py-1" onClick={() => setMenuOpen(false)}>
-                  ÉÌ¼ÒÖĞĞÄ
+                  å•†å®¶ä¸­å¿ƒ
                 </Link>
               )}
               <hr className="border-gray-100" />
               <span className="block text-gray-400">{currentUser.username}</span>
               <button onClick={() => { handleLogout(); setMenuOpen(false); }} className="text-red-500">
-                ÍË³öµÇÂ¼
+                é€€å‡ºç™»å½•
               </button>
             </>
           ) : (
             <Link to="/login" className="block text-blue-600" onClick={() => setMenuOpen(false)}>
-              µÇÂ¼
+              ç™»å½•
             </Link>
           )}
         </div>

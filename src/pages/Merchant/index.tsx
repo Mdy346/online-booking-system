@@ -1,12 +1,12 @@
-import { NavLink, Outlet, Navigate } from "react-router-dom";
+锘縤mport { NavLink, Outlet, Navigate } from "react-router-dom";
 import { BarChart3, ListTodo, Clock } from "lucide-react";
 import { useAppStore } from "../../store";
 import { cn } from "../../utils";
 
 const tabs = [
-  { to: "/merchant", label: "数据概览", icon: BarChart3, end: true },
-  { to: "/merchant/services", label: "服务管理", icon: ListTodo, end: false },
-  { to: "/merchant/schedule", label: "预约管理", icon: Clock, end: false },
+  { to: "/merchant", label: "鏁版嵁姒傝", icon: BarChart3, end: true },
+  { to: "/merchant/services", label: "鏈嶅姟绠＄悊", icon: ListTodo, end: false },
+  { to: "/merchant/schedule", label: "棰勭害绠＄悊", icon: Clock, end: false },
 ];
 
 export default function MerchantLayout() {
