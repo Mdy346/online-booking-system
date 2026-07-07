@@ -1,4 +1,4 @@
-﻿package com.booking.controller;
+package com.booking.controller;
 
 import com.booking.common.ApiResponse;
 import com.booking.dto.CreateAppointmentRequest;

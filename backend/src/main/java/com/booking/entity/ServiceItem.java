@@ -1,4 +1,4 @@
-﻿package com.booking.entity;
+package com.booking.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
