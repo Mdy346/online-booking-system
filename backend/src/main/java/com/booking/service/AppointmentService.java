@@ -15,29 +15,24 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors; @Service
+import java.util.stream.Collectors;
+
+@Service
 @RequiredArgsConstructor
 public class AppointmentService extends ServiceImpl<AppointmentMapper, Appointment> {
 
     private final ScheduleService scheduleService;
     private final ServiceService serviceService;
     private final UserService userService;
+    private final NotificationService notificationService;
 
     private static final DateTimeFormatter DTF = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    /**
-     * Create a new appointment.
-     * 1. Lock the schedule slot (check capacity)
-     * 2. Create the order with status = PENDING (1)
-     */
     @Transactional
     public AppointmentVo create(Integer userId, Integer serviceId, Integer scheduleId) {
-        // Validate ServiceItem exists
         ServiceItem serviceItem = serviceService.getById(serviceId);
-        if (serviceItem == null) {
-            throw BusinessException.notFound("服务项目");
-        }
-        // Lock slot (atomic capacity check + increment)
+        if (serviceItem == null) throw BusinessException.notFound("服务项目");
+
         scheduleService.lockSlot(scheduleId);
 
         Appointment appointment = new Appointment();
@@ -48,17 +43,21 @@ public class AppointmentService extends ServiceImpl<AppointmentMapper, Appointme
         appointment.setCreateTime(LocalDateTime.now());
         save(appointment);
 
+        // 通知商家：有新的预约
+        notificationService.createNotification(
+                serviceItem.getMerchantId(),
+                "新的预约",
+                "您有一个新的预约待处理",
+                "APPOINTMENT", appointment.getAppointmentId());
+
         return toVo(appointment);
     }
 
-    /** Cancel an appointment (user-initiated). */
     @Transactional
     public void cancel(Integer appointmentId, Integer userId) {
         Appointment appointment = getById(appointmentId);
         if (appointment == null) throw BusinessException.notFound("预约订单");
-        if (!appointment.getUserId().equals(userId)) {
-            throw BusinessException.forbidden();
-        }
+        if (!appointment.getUserId().equals(userId)) throw BusinessException.forbidden();
         if (appointment.getStatus() != AppointmentStatus.PENDING
                 && appointment.getStatus() != AppointmentStatus.CONFIRMED) {
             throw BusinessException.conflict("当前状态不允许取消");
@@ -66,9 +65,18 @@ public class AppointmentService extends ServiceImpl<AppointmentMapper, Appointme
         appointment.setStatus(AppointmentStatus.CANCELLED);
         updateById(appointment);
         scheduleService.releaseSlot(appointment.getScheduleId());
+
+        // 通知商家：用户取消了预约
+        ServiceItem serviceItem = serviceService.getById(appointment.getServiceId());
+        if (serviceItem != null) {
+            notificationService.createNotification(
+                    serviceItem.getMerchantId(),
+                    "预约已取消",
+                    "用户取消了预约",
+                    "APPOINTMENT", appointmentId);
+        }
     }
 
-    /** Confirm an appointment (merchant action). */
     @Transactional
     public void confirm(Integer appointmentId) {
         Appointment appointment = getById(appointmentId);
@@ -78,10 +86,15 @@ public class AppointmentService extends ServiceImpl<AppointmentMapper, Appointme
         }
         appointment.setStatus(AppointmentStatus.CONFIRMED);
         updateById(appointment);
+
+        // 通知用户：预约已确认
+        notificationService.createNotification(
+                appointment.getUserId(),
+                "预约已确认",
+                "您的预约已确认",
+                "APPOINTMENT", appointmentId);
     }
 
-
-    /** Complete an appointment (merchant action after service is done). */
     @Transactional
     public void complete(Integer appointmentId) {
         Appointment appointment = getById(appointmentId);
@@ -91,8 +104,15 @@ public class AppointmentService extends ServiceImpl<AppointmentMapper, Appointme
         }
         appointment.setStatus(AppointmentStatus.COMPLETED);
         updateById(appointment);
+
+        // 通知用户：预约已完成，请评价
+        notificationService.createNotification(
+                appointment.getUserId(),
+                "预约已完成",
+                "预约已完成，请评价",
+                "APPOINTMENT", appointmentId);
     }
-    /** Reject an appointment (merchant action). */
+
     @Transactional
     public void reject(Integer appointmentId) {
         Appointment appointment = getById(appointmentId);
@@ -103,9 +123,15 @@ public class AppointmentService extends ServiceImpl<AppointmentMapper, Appointme
         appointment.setStatus(AppointmentStatus.REJECTED);
         updateById(appointment);
         scheduleService.releaseSlot(appointment.getScheduleId());
+
+        // 通知用户：预约被拒绝
+        notificationService.createNotification(
+                appointment.getUserId(),
+                "预约已拒绝",
+                "您的预约已被拒绝",
+                "APPOINTMENT", appointmentId);
     }
 
-    /** Get all appointments for a specific user. */
     public List<AppointmentVo> getUserAppointments(Integer userId) {
         List<Appointment> list = lambdaQuery()
                 .eq(Appointment::getUserId, userId)
@@ -114,16 +140,13 @@ public class AppointmentService extends ServiceImpl<AppointmentMapper, Appointme
         return list.stream().map(this::toVo).collect(Collectors.toList());
     }
 
-    /** Get all appointments for a merchant's services. */
     public List<AppointmentVo> getMerchantAppointments(Integer merchantId) {
-        // First find all services owned by this merchant
         List<ServiceItem> merchantServices = serviceService.lambdaQuery()
                 .eq(ServiceItem::getMerchantId, merchantId)
                 .list();
         Set<Integer> serviceIds = merchantServices.stream()
                 .map(ServiceItem::getServiceId)
                 .collect(Collectors.toSet());
-
         if (serviceIds.isEmpty()) return Collections.emptyList();
 
         List<Appointment> list = lambdaQuery()
@@ -133,7 +156,6 @@ public class AppointmentService extends ServiceImpl<AppointmentMapper, Appointme
         return list.stream().map(this::toVo).collect(Collectors.toList());
     }
 
-    /** Convert entity to view object with joined service/user info. */
     private AppointmentVo toVo(Appointment appointment) {
         ServiceItem serviceItem = serviceService.getById(appointment.getServiceId());
         Schedule schedule = scheduleService.getById(appointment.getScheduleId());
@@ -157,7 +179,6 @@ public class AppointmentService extends ServiceImpl<AppointmentMapper, Appointme
         return vo;
     }
 
-    // Inner class for appointment view object
     @lombok.Data
     public static class AppointmentVo {
         private Integer appointmentId;
@@ -174,7 +195,3 @@ public class AppointmentService extends ServiceImpl<AppointmentMapper, Appointme
         private String createTime;
     }
 }
-
-
-
-

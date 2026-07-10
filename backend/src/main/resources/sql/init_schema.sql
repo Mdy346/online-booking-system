@@ -1,4 +1,4 @@
--- =====================================================
+﻿-- =====================================================
 -- Online Reservation System - Database Initialization
 -- Source: online_reservation_srs_combined.md Section 4.3
 -- Target: MySQL 8.0+
@@ -69,3 +69,16 @@ CREATE TABLE IF NOT EXISTS T_Comment (
     PRIMARY KEY (comment_id),
     CONSTRAINT fk_comment_appointment FOREIGN KEY (appointment_id) REFERENCES T_Appointment(appointment_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户服务评价表';
+
+-- 6. 通知消息表
+CREATE TABLE IF NOT EXISTS T_Notification (
+    notif_id     INT AUTO_INCREMENT PRIMARY KEY,
+    user_id      INT NOT NULL,
+    title        VARCHAR(100) NOT NULL,
+    message      TEXT,
+    related_type VARCHAR(20),
+    related_id   INT,
+    is_read      TINYINT DEFAULT 0,
+    create_time  DATETIME DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_notification_user FOREIGN KEY (user_id) REFERENCES T_User(user_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='通知消息表';
