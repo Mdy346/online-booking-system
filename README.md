@@ -22,8 +22,8 @@
 
 | 角色 | 功能 |
 |------|------|
-| **普通用户** | 注册/登录、浏览服务（搜索/筛选/排序）、查看服务详情与排班时段、提交预约、查看我的预约、取消预约、评价已完成的订单 |
-| **商家** | 数据概览（统计面板+趋势图）、服务管理（发布/编辑/删除）、排班管理（时段增删）、预约管理（确认/拒绝/查看记录） |
+| **普通用户** | 注册/登录、浏览服务（搜索/筛选/排序）、查看服务详情与排班时段、提交预约、查看我的预约、取消预约、评价已完成的订单、接收预约通知 |
+| **商家** | 数据概览（统计面板+趋势图）、服务管理（发布/编辑/删除）、排班管理（时段增删）、预约管理（确认/拒绝/完成）、接收新预约通知 |
 
 ---
 
@@ -82,7 +82,7 @@ online-booking-system/
 │   ├── mock/data.ts            # Mock 模拟数据
 │   │
 │   ├── components/             # 可复用组件
-│   │   ├── Navbar.tsx          # 导航栏
+│   │   ├── Navbar.tsx          # 导航栏（含通知铃铛）
 │   │   └── ServiceCard.tsx     # 服务卡片
 │   │
 │   └── pages/                  # 页面组件
@@ -118,6 +118,7 @@ online-booking-system/
 │       └── test/                     # 测试代码
 │
 ├── backend.md                  # 后端技术文档
+├── 功能测试报告.md              # 功能测试报告
 ```
 
 ---
@@ -137,7 +138,7 @@ online-booking-system/
 ### 1. 克隆项目
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/Mdy346/online-booking-system.git
 cd online-booking-system
 ```
 
@@ -182,33 +183,78 @@ mvnw.cmd spring-boot:run
 
 ### 5. 前后端联调
 
-将 `src/api/index.ts` 中第 8 行改为：
+将 `src/api/index.ts` 中的配置改为：
 
 ```typescript
 const USE_MOCK = false;
+const API_BASE = "";  // 空字符串走 Vite 代理到 localhost:8080
 ```
 
-然后重启前端 `npm run dev`，此时前端将通过 Vite 代理将 `/api` 请求转发到后端的 `http://localhost:8080`。
+然后重启前端 `npm run dev`，前端将通过 Vite 代理将 `/api` 请求转发到后端。
+
+> **提示：** 如果只是看页面效果，将 `USE_MOCK` 设为 `true` 即可使用前端模拟数据，无需启动后端和数据库。
 
 ---
 
 ## 🔌 API 接口概览
 
-| 模块 | 方法 | 路径 | 说明 |
-|------|------|------|------|
-| 认证 | POST | `/api/auth/login` | 用户登录 |
-| 认证 | POST | `/api/auth/register` | 用户注册 |
-| 服务 | GET | `/api/services` | 服务列表（支持搜索/筛选/排序） |
-| 服务 | GET | `/api/services/{id}` | 服务详情 |
-| 排班 | GET | `/api/schedules?serviceId=` | 排班时段查询 |
-| 预约 | POST | `/api/appointments` | 提交预约 |
-| 预约 | GET | `/api/appointments/user/{userId}` | 用户预约列表 |
-| 预约 | GET | `/api/appointments/merchant/{merchantId}` | 商家预约列表 |
-| 预约 | PUT | `/api/appointments/{id}/cancel` | 取消预约 |
-| 预约 | PUT | `/api/appointments/{id}/confirm` | 商家确认 |
-| 预约 | PUT | `/api/appointments/{id}/reject` | 商家拒绝 |
-| 评价 | POST | `/api/comments` | 提交评价 |
-| 统计 | GET | `/api/stats/merchant/{merchantId}` | 商家数据统计 |
+### 认证
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/api/auth/login` | 用户登录 |
+| POST | `/api/auth/register` | 用户注册 |
+
+### 服务
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/api/services` | 服务列表（支持搜索/筛选/排序） |
+| GET | `/api/services/{id}` | 服务详情 |
+| POST | `/api/services` | 新增服务（商家） |
+| PUT | `/api/services/{id}` | 编辑服务（商家） |
+| DELETE | `/api/services/{id}` | 删除服务（商家） |
+
+### 排班
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/api/schedules?serviceId=` | 排班时段查询 |
+| POST | `/api/schedules` | 新增排班时段（商家） |
+| DELETE | `/api/schedules/{id}` | 删除排班时段（商家） |
+
+### 预约
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/api/appointments` | 提交预约 |
+| GET | `/api/appointments/user/{userId}` | 用户预约列表 |
+| GET | `/api/appointments/merchant/{merchantId}` | 商家预约列表 |
+| PUT | `/api/appointments/{id}/cancel` | 取消预约 |
+| PUT | `/api/appointments/{id}/confirm` | 商家确认预约 |
+| PUT | `/api/appointments/{id}/reject` | 商家拒绝预约 |
+| PUT | `/api/appointments/{id}/complete` | 商家完成预约 |
+
+### 评价
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/api/comments` | 提交评价 |
+
+### 通知
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/api/notifications/user/{userId}` | 用户通知列表 |
+| GET | `/api/notifications/user/{userId}/unread-count` | 未读通知数 |
+| PUT | `/api/notifications/{notifId}/read` | 标记单条已读 |
+| PUT | `/api/notifications/user/{userId}/read-all` | 全部标记已读 |
+
+### 统计
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/api/stats/merchant/{merchantId}` | 商家数据统计 |
 
 所有接口统一返回格式：
 
@@ -224,13 +270,28 @@ const USE_MOCK = false;
 
 ---
 
+## 🧪 测试
+
+### 测试账号
+
+| 用户名 | 密码 | 角色 | 说明 |
+|--------|------|------|------|
+| `alice` | `1234` | 普通用户 | 有历史预约记录 |
+| `bob_merchant` | `1234` | 商家 | 有 3 个服务项目 |
+
+### 功能测试结果
+
+详见 [功能测试报告.md](./功能测试报告.md)
+
+---
+
 ## 👥 团队分工
 
 | 成员 | 职责 |
 |------|------|
-| 李佳濠 | 前端：页面布局、路由配置、前后端数据交互、UI美化。 |
-| 马丹阳 | 后端：数据库设计、核心业务逻辑（冲突判断）、后端接口编写、接口联调。 |
-| 黄怡然 | 测试：Git管理、环境部署、功能测试、PPT/文档撰写、兜底辅助。 |
+| 李佳濠 | 前端：页面布局、路由配置、前后端数据交互、UI美化 |
+| 马丹阳 | 后端：数据库设计、核心业务逻辑（冲突判断）、后端接口编写、接口联调 |
+| 黄怡然 | 测试：Git管理、环境部署、功能测试、文档撰写、兜底辅助 |
 
 ---
 
@@ -243,3 +304,4 @@ const USE_MOCK = false;
 ## 🔗 相关文档
 
 - [后端技术文档（完整 API 与数据库设计）](./backend.md)
+- [功能测试报告](./功能测试报告.md)
