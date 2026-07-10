@@ -14,48 +14,38 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
-import com.booking.dto.CreateScheduleRequest;
+
 @Service
 @RequiredArgsConstructor
 public class ScheduleService extends ServiceImpl<ScheduleMapper, Schedule> {
 
     private static final DateTimeFormatter DTF = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    /** Get available (future) schedules for a given ServiceItem. */
     public List<ScheduleItem> getSchedules(Integer serviceId) {
         List<Schedule> schedules = lambdaQuery()
                 .eq(Schedule::getServiceId, serviceId)
-                .ge(Schedule::getStartTime, LocalDateTime.now())
+                .ge(Schedule::getStartTime, LocalDateTime.now().withSecond(0).withNano(0))
                 .orderByAsc(Schedule::getStartTime)
                 .list();
 
         return schedules.stream()
-                .map(this::toScheduleItem)
+                .map(s -> toScheduleItem(s))
                 .collect(Collectors.toList());
     }
 
-    /** Lock a schedule slot: atomically increment booked_count if capacity not exceeded. */
     @Transactional
     public void lockSlot(Integer scheduleId) {
         Schedule schedule = getById(scheduleId);
-        if (schedule == null) {
-            throw BusinessException.notFound("排班时段");
-        }
-        if (schedule.getBookedCount() >= schedule.getCapacity()) {
-            throw BusinessException.slotFull();
-        }
-        // Atomic update: booked_count = booked_count + 1 where booked_count < capacity
+        if (schedule == null) throw BusinessException.notFound("????");
+        if (schedule.getBookedCount() >= schedule.getCapacity()) throw BusinessException.slotFull();
         boolean updated = lambdaUpdate()
                 .eq(Schedule::getScheduleId, scheduleId)
                 .lt(Schedule::getBookedCount, schedule.getCapacity())
                 .setSql("booked_count = booked_count + 1")
                 .update();
-        if (!updated) {
-            throw BusinessException.slotFull();
-        }
+        if (!updated) throw BusinessException.slotFull();
     }
 
-    /** Release a lock (decrement booked_count). Used when appointment is cancelled. */
     @Transactional
     public void releaseSlot(Integer scheduleId) {
         lambdaUpdate()
@@ -66,7 +56,7 @@ public class ScheduleService extends ServiceImpl<ScheduleMapper, Schedule> {
     }
 
     public ScheduleItem toScheduleItem(Schedule s) {
-        ScheduleItem item = new ScheduleItem(
+        return new ScheduleItem(
                 s.getScheduleId(),
                 s.getStartTime().format(DTF),
                 s.getEndTime().format(DTF),
@@ -74,28 +64,6 @@ public class ScheduleService extends ServiceImpl<ScheduleMapper, Schedule> {
                 s.getBookedCount(),
                 s.getBookedCount() < s.getCapacity()
         );
-        return item;
-    }
-
-        @Transactional
-    public ScheduleItem createSchedule(CreateScheduleRequest req) {
-        Schedule schedule = new Schedule();
-        schedule.setServiceId(req.getServiceId());
-        schedule.setStartTime(LocalDateTime.parse(req.getStartTime(), DTF));
-        schedule.setEndTime(LocalDateTime.parse(req.getEndTime(), DTF));
-        schedule.setCapacity(req.getCapacity());
-        schedule.setBookedCount(0);
-        save(schedule);
-        return toScheduleItem(schedule);
-    }
-
-    @Transactional
-    public void deleteSchedule(Integer scheduleId) {
-        Schedule schedule = getById(scheduleId);
-        if (schedule == null) throw BusinessException.notFound("排班时段");
-        removeById(scheduleId);
     }
 }
-
-
 

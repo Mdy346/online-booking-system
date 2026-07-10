@@ -7,6 +7,7 @@ import com.booking.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -23,6 +24,10 @@ public class ScheduleController {
 
     @PostMapping
     public ApiResponse<Schedule> create(@RequestBody Schedule schedule) {
+        // ????????????????
+        if (schedule.getStartTime() != null && schedule.getStartTime().isBefore(LocalDateTime.now())) {
+            return ApiResponse.error(400, "排班开始时间不能早于当前时间，请重新选择");
+        }
         scheduleService.save(schedule);
         return ApiResponse.success(schedule);
     }
@@ -30,6 +35,6 @@ public class ScheduleController {
     @DeleteMapping("/{scheduleId}")
     public ApiResponse<Void> delete(@PathVariable Integer scheduleId) {
         scheduleService.removeById(scheduleId);
-        return ApiResponse.success("删除成功");
+        return ApiResponse.success("添加成功");
     }
 }
