@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
+import com.booking.dto.CreateScheduleRequest;
 @Service
 @RequiredArgsConstructor
 public class ScheduleService extends ServiceImpl<ScheduleMapper, Schedule> {
@@ -74,6 +75,25 @@ public class ScheduleService extends ServiceImpl<ScheduleMapper, Schedule> {
                 s.getBookedCount() < s.getCapacity()
         );
         return item;
+    }
+
+        @Transactional
+    public ScheduleItem createSchedule(CreateScheduleRequest req) {
+        Schedule schedule = new Schedule();
+        schedule.setServiceId(req.getServiceId());
+        schedule.setStartTime(LocalDateTime.parse(req.getStartTime(), DTF));
+        schedule.setEndTime(LocalDateTime.parse(req.getEndTime(), DTF));
+        schedule.setCapacity(req.getCapacity());
+        schedule.setBookedCount(0);
+        save(schedule);
+        return toScheduleItem(schedule);
+    }
+
+    @Transactional
+    public void deleteSchedule(Integer scheduleId) {
+        Schedule schedule = getById(scheduleId);
+        if (schedule == null) throw BusinessException.notFound("排班时段");
+        removeById(scheduleId);
     }
 }
 
