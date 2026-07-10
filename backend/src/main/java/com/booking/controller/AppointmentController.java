@@ -47,6 +47,12 @@ public class AppointmentController {
         return ApiResponse.success("预约已确认");
     }
 
+    @PutMapping("/{id}/complete")
+    public ApiResponse<Void> complete(@PathVariable Integer id) {
+        appointmentService.complete(id);
+        return ApiResponse.success("服务已完成");
+    }
+
     @PutMapping("/{id}/reject")
     public ApiResponse<Void> reject(@PathVariable Integer id) {
         appointmentService.reject(id);

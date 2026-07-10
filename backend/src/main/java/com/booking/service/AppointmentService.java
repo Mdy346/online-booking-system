@@ -80,6 +80,18 @@ public class AppointmentService extends ServiceImpl<AppointmentMapper, Appointme
         updateById(appointment);
     }
 
+
+    /** Complete an appointment (merchant action after service is done). */
+    @Transactional
+    public void complete(Integer appointmentId) {
+        Appointment appointment = getById(appointmentId);
+        if (appointment == null) throw BusinessException.notFound("预约订单");
+        if (appointment.getStatus() != AppointmentStatus.CONFIRMED) {
+            throw BusinessException.conflict("只有已确认状态的订单可以标记为已完成");
+        }
+        appointment.setStatus(AppointmentStatus.COMPLETED);
+        updateById(appointment);
+    }
     /** Reject an appointment (merchant action). */
     @Transactional
     public void reject(Integer appointmentId) {
@@ -162,6 +174,7 @@ public class AppointmentService extends ServiceImpl<AppointmentMapper, Appointme
         private String createTime;
     }
 }
+
 
 
 
