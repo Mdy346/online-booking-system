@@ -116,6 +116,12 @@ export default function MerchantServices() {
 
   const handleAddSlot = async () => {
     if (!newSlotDate || !newSlotStart || !newSlotEnd || !scheduleServiceId) return;
+    // 检查开始时间是否已过
+    const slotStart = new Date(`${newSlotDate}T${newSlotStart}:00`);
+    if (slotStart.getTime() <= Date.now()) {
+      alert("所选时段已过期，请选择未来的时间");
+      return;
+    }
     try {
       await createSchedule({
         serviceId: scheduleServiceId,
