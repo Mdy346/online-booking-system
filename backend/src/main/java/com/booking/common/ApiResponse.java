@@ -1,4 +1,4 @@
-﻿package com.booking.common;
+package com.booking.common;
 
 import lombok.Data;
 

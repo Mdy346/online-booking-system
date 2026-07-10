@@ -1,4 +1,4 @@
-﻿package com.booking.mapper;
+package com.booking.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.booking.entity.ServiceItem;
