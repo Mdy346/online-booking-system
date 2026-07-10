@@ -357,3 +357,8 @@ export async function deleteSchedule(scheduleId: number): Promise<void> {
   }
   await request<void>("/api/schedules/" + scheduleId, { method: "DELETE" });
 }
+
+export async function completeAppointment(appointmentId: number): Promise<void> {
+  if (USE_MOCK) { await delay(); return; }
+  await request<void>("/api/appointments/" + appointmentId + "/complete", { method: "PUT" });
+}
