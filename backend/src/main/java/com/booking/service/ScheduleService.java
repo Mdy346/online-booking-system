@@ -36,7 +36,7 @@ public class ScheduleService extends ServiceImpl<ScheduleMapper, Schedule> {
     @Transactional
     public void lockSlot(Integer scheduleId) {
         Schedule schedule = getById(scheduleId);
-        if (schedule == null) throw BusinessException.notFound("????");
+        if (schedule == null) throw BusinessException.notFound("未找到计划");
         if (schedule.getBookedCount() >= schedule.getCapacity()) throw BusinessException.slotFull();
         boolean updated = lambdaUpdate()
                 .eq(Schedule::getScheduleId, scheduleId)

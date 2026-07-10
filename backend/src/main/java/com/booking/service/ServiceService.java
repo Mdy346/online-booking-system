@@ -79,7 +79,7 @@ public class ServiceService extends ServiceImpl<ServiceMapper, ServiceItem> {
     @Transactional
     public ServiceDetailResponse updateService(Integer serviceId, SaveServiceRequest req) {
         ServiceItem item = getById(serviceId);
-        if (item == null) throw new BusinessException(404, "???????");
+        if (item == null) throw new BusinessException(404, "服务不存在,更新失败");
         if (req.getServiceName() != null) item.setServiceName(req.getServiceName());
         if (req.getDescription() != null) item.setDescription(req.getDescription());
         if (req.getPrice() != null) item.setPrice(req.getPrice());
@@ -91,7 +91,7 @@ public class ServiceService extends ServiceImpl<ServiceMapper, ServiceItem> {
     @Transactional
     public void deleteService(Integer serviceId) {
         ServiceItem item = getById(serviceId);
-        if (item == null) throw new BusinessException(404, "???????");
+        if (item == null) throw new BusinessException(404, "服务不存在,删除失败");
         removeById(serviceId);
     }
 

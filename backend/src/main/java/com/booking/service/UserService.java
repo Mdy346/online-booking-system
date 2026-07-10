@@ -10,7 +10,6 @@ import com.booking.util.JwtUtil;
 import com.booking.util.PasswordUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -19,7 +18,6 @@ import java.time.format.DateTimeFormatter;
 public class UserService extends ServiceImpl<UserMapper, User> {
 
     private final JwtUtil jwtUtil;
-    private final VerificationCodeService verificationCodeService;
 
     public LoginResponse login(String username, String password) {
         User user = lambdaQuery()
@@ -36,28 +34,22 @@ public class UserService extends ServiceImpl<UserMapper, User> {
     }
 
     public LoginResponse register(RegisterRequest req) {
-        // 1. ?????
-        if (!verificationCodeService.verifyCode(req.getPhone(), req.getCode())) {
-            throw new BusinessException(400, "?????????");
-        }
-
-        // 2. ?????????
+        // 检查用户名是否重复
         boolean usernameExists = lambdaQuery()
                 .eq(User::getUsername, req.getUsername())
                 .count() > 0;
         if (usernameExists) {
-            throw new BusinessException("???????");
+            throw new BusinessException("用户名已存在");
         }
 
-        // 3. ??????????
+        // 检查手机号是否已注册
         boolean phoneExists = lambdaQuery()
                 .eq(User::getPhone, req.getPhone())
                 .count() > 0;
         if (phoneExists) {
-            throw new BusinessException("????????????");
+            throw new BusinessException("手机号已被注册");
         }
 
-        // 4. ?????
         User user = new User();
         user.setUsername(req.getUsername());
         user.setPasswordHash(PasswordUtil.hash(req.getPassword()));

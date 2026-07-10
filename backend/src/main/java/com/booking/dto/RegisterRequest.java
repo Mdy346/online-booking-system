@@ -6,19 +6,16 @@ import lombok.Data;
 
 @Data
 public class RegisterRequest {
-    @NotBlank(message = "??????")
+    @NotBlank(message = "账户名")
     private String username;
 
-    @NotBlank(message = "??????")
+    @NotBlank(message = "密码")
     private String password;
 
-    @NotBlank(message = "???????")
-    @Pattern(regexp = "^1[3-9]\\d{9}$", message = "????????")
+    @NotBlank(message = "001")
+    @Pattern(regexp = "^1[3-9]\\d{9}$", message = "手机号")
     private String phone;
 
-    @NotBlank(message = "??????")
+    @NotBlank(message = "身份")
     private String role;  // USER or MERCHANT
-
-    @NotBlank(message = "???????")
-    private String code;
 }

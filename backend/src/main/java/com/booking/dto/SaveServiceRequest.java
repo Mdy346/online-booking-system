@@ -7,17 +7,17 @@ import java.math.BigDecimal;
 
 @Data
 public class SaveServiceRequest {
-    @NotBlank(message = "????????")
+    @NotBlank(message = "服务名")
     private String serviceName;
 
     private String description;
 
-    @NotNull(message = "??????")
+    @NotNull(message = "服务价格")
     private BigDecimal price;
 
-    @NotBlank(message = "??????")
+    @NotBlank(message = "服务类型")
     private String category;
 
-    @NotNull(message = "??ID????")
+    @NotNull(message = "商家")
     private Integer merchantId;
 }
