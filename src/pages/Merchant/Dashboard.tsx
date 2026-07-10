@@ -65,24 +65,37 @@ export default function MerchantDashboard() {
           <BarChart3 className="w-5 h-5 text-blue-600" />
           近 14 天预约趋势
         </h2>
-        <div className="flex items-end gap-1 h-32">
-          {stats.dailyTrend.map((d) => {
+        <svg className="w-full h-40" viewBox="0 0 700 160" preserveAspectRatio="none">
+          {(() => {
             const max = Math.max(...stats.dailyTrend.map((x) => x.count), 1);
-            const h = (d.count / max) * 100;
+            const w = 700, h = 140;
+            const vb = "0 0 " + w + " " + (h + 30);
+            const step = w / (stats.dailyTrend.length - 1);
+            const pts = stats.dailyTrend.map((d, i) =>
+              `${i * step},${h - (d.count / max) * h}`
+            ).join(" ");
             return (
-              <div key={d.date} className="flex-1 flex flex-col items-center gap-1">
-                <span className="text-[10px] text-gray-400">{d.count}</span>
-                <div
-                  className="w-full bg-blue-500 rounded-t"
-                  style={{ height: `${Math.max(h, 4)}%` }}
-                />
-                <span className="text-[10px] text-gray-400 -rotate-45 origin-left whitespace-nowrap">
-                  {d.date.slice(5)}
-                </span>
-              </div>
+              <g>
+                <polyline fill="none" stroke="#3b82f6" strokeWidth="2" points={pts} />
+                {stats.dailyTrend.map((d, i) => {
+                  const cx = i * step;
+                  const cy = h - (d.count / max) * h;
+                  return (
+                    <g key={d.date}>
+                      <circle cx={cx} cy={cy} r="3" fill="#3b82f6" />
+                      <text x={cx} y="155" textAnchor="middle" className="text-[8px] fill-gray-400">
+                        {d.date.slice(5)}
+                      </text>
+                      <text x={cx} y={cy - 8} textAnchor="middle" className="text-[9px] fill-gray-500">
+                        {d.count}
+                      </text>
+                    </g>
+                  );
+                })}
+              </g>
             );
-          })}
-        </div>
+          })()}
+        </svg>
       </div>
     </div>
   );
