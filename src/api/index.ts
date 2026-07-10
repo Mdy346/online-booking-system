@@ -8,7 +8,7 @@
 const USE_MOCK = true;
 
 /** 后端服务地址（后端默认端口 8080） */
-const API_BASE = "http://localhost:8080";
+const API_BASE = "https://phony-darkened-hurry.ngrok-free.dev";
 
 // --- HTTP 请求工具 ---
 
@@ -21,6 +21,7 @@ interface ApiResponse<T> {
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const token = localStorage.getItem("token");
   const headers: Record<string, string> = {
+    "ngrok-skip-browser-warning": "true",
     "Content-Type": "application/json",
     ...((options?.headers as Record<string, string>) || {}),
   };
@@ -252,4 +253,107 @@ export async function getMerchantStats(merchantId: number): Promise<MerchantStat
     return _mockMerchantStats[merchantId] ?? { totalAppointments: 0, completedAppointments: 0, cancelledAppointments: 0, averageRating: 0, dailyTrend: [] };
   }
   return request<MerchantStats>("/api/stats/merchant/" + merchantId);
+}
+
+// --- 服务管理（商家） ---
+
+export async function createService(data: {
+  serviceName: string;
+  description: string;
+  price: number;
+  category: string;
+}): Promise<ServiceItem> {
+  if (USE_MOCK) {
+    await delay();
+    await ensureMock();
+    const newId = Math.max(..._mockServices.map((s) => s.serviceId), 0) + 1;
+    const svc: ServiceItem = {
+      serviceId: newId,
+      serviceName: data.serviceName,
+      description: data.description,
+      price: data.price,
+      category: data.category,
+      merchantId: 2,
+      merchantName: "bob_merchant",
+      merchantPhone: "13900139000",
+      rating: 0,
+      reviewCount: 0,
+    };
+    _mockServices.push(svc);
+    return svc;
+  }
+  return request<ServiceItem>("/api/services", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateService(serviceId: number, data: {
+  serviceName?: string;
+  description?: string;
+  price?: number;
+  category?: string;
+}): Promise<ServiceItem> {
+  if (USE_MOCK) {
+    await delay();
+    await ensureMock();
+    const idx = _mockServices.findIndex((s) => s.serviceId === serviceId);
+    if (idx < 0) throw new Error("服务不存在");
+    _mockServices[idx] = { ..._mockServices[idx], ...data };
+    return _mockServices[idx];
+  }
+  return request<ServiceItem>("/api/services/" + serviceId, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteService(serviceId: number): Promise<void> {
+  if (USE_MOCK) {
+    await delay();
+    await ensureMock();
+    _mockServices = _mockServices.filter((s) => s.serviceId !== serviceId);
+    return;
+  }
+  await request<void>("/api/services/" + serviceId, { method: "DELETE" });
+}
+
+// --- 排班管理（商家） ---
+
+export async function createSchedule(data: {
+  serviceId: number;
+  startTime: string;
+  endTime: string;
+  capacity: number;
+}): Promise<ScheduleSlot> {
+  if (USE_MOCK) {
+    await delay();
+    await ensureMock();
+    const newId = Math.max(..._mockSchedules.map((s) => s.scheduleId), 0) + 1;
+    const slot: ScheduleSlot = {
+      scheduleId: newId,
+      serviceId: data.serviceId,
+      startTime: data.startTime,
+      endTime: data.endTime,
+      capacity: data.capacity,
+      bookedCount: 0,
+      available: true,
+    };
+    _mockSchedules.push(slot);
+    return slot;
+  }
+  return request<ScheduleSlot>("/api/schedules", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteSchedule(scheduleId: number): Promise<void> {
+  if (USE_MOCK) {
+    await delay();
+    await ensureMock();
+    _mockSchedules = _mockSchedules.filter((s) => s.scheduleId !== scheduleId);
+    return;
+  }
+  await request<void>("/api/schedules/" + scheduleId, { method: "DELETE" });
 }
