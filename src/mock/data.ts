@@ -1,4 +1,4 @@
-﻿import type { User, ServiceItem, ScheduleSlot, Appointment, Comment, MerchantStats } from "../types";
+import type { User, ServiceItem, ScheduleSlot, Appointment, Comment, MerchantStats, Notification } from "../types";
 
 // ─── 用户 ───────────────────────────────────────────
 export const mockUsers: User[] = [
@@ -224,3 +224,11 @@ export const mockMerchantStats: Record<number, MerchantStats> = {
     }),
   },
 };
+
+export const mockNotifications: Notification[] = [
+  { notifId: 1, userId: 2, title: "新的预约", message: "用户 alice 预约了「中医推拿理疗」", relatedType: "APPOINTMENT", relatedId: 1, isRead: false, createTime: "2026-07-10T14:00:00" },
+  { notifId: 2, userId: 1, title: "预约已确认", message: "您的「中医推拿理疗」预约已被确认", relatedType: "APPOINTMENT", relatedId: 1, isRead: false, createTime: "2026-07-10T14:05:00" },
+  { notifId: 3, userId: 1, title: "预约已完成", message: "您的「皮肤管理护理」已完成，请评价", relatedType: "APPOINTMENT", relatedId: 2, isRead: true, createTime: "2026-07-09T16:00:00" },
+  { notifId: 4, userId: 2, title: "用户取消预约", message: "用户 alice 取消了「中医推拿理疗」的预约", relatedType: "APPOINTMENT", relatedId: 1, isRead: true, createTime: "2026-07-08T10:00:00" },
+  { notifId: 5, userId: 2, title: "有新评价", message: "用户对「皮肤管理护理」给出了 5 星好评", relatedType: "APPOINTMENT", relatedId: 2, isRead: false, createTime: "2026-07-09T17:00:00" },
+];
