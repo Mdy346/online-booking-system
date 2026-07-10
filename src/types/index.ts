@@ -73,3 +73,15 @@ export interface MerchantStats {
   averageRating: number;
   dailyTrend: { date: string; count: number }[];
 }
+
+
+export interface Notification {
+  notifId: number;
+  userId: number;
+  title: string;
+  message: string;
+  relatedType: "APPOINTMENT" | "SYSTEM" | null;
+  relatedId: number | null;
+  isRead: boolean;
+  createTime: string;
+}

@@ -1,4 +1,4 @@
-﻿import type { User, ServiceItem, ScheduleSlot, Appointment, Comment, MerchantStats } from "../types";
+import type { User, ServiceItem, ScheduleSlot, Appointment, Comment, MerchantStats, Notification } from "../types";
 
 /**
  * API 层 --- 支持 Mock / 真实后端 双模式
@@ -47,6 +47,7 @@ let _mockServices: ServiceItem[] = [];
 let _mockSchedules: ScheduleSlot[] = [];
 let _mockAppointments: Appointment[] = [];
 let _mockComments: Comment[] = [];
+let _mockNotifications: Notification[] = [];
 let _mockMerchantStats: Record<number, MerchantStats> = {};
 
 async function ensureMock() {
@@ -57,6 +58,7 @@ async function ensureMock() {
     _mockSchedules = m.mockSchedules;
     _mockAppointments = m.mockAppointments;
     _mockComments = m.mockComments;
+    _mockNotifications = m.mockNotifications;
     _mockMerchantStats = m.mockMerchantStats;
     _mockLoaded = true;
   }
@@ -361,4 +363,45 @@ export async function deleteSchedule(scheduleId: number): Promise<void> {
 export async function completeAppointment(appointmentId: number): Promise<void> {
   if (USE_MOCK) { await delay(); return; }
   await request<void>("/api/appointments/" + appointmentId + "/complete", { method: "PUT" });
+}
+
+// --- 通知相关 ---
+
+export async function getNotifications(userId: number): Promise<Notification[]> {
+  if (USE_MOCK) {
+    await delay();
+    await ensureMock();
+    return _mockNotifications.filter((n) => n.userId === userId);
+  }
+  return request<Notification[]>("/api/notifications/user/" + userId);
+}
+
+export async function getUnreadCount(userId: number): Promise<number> {
+  if (USE_MOCK) {
+    await delay();
+    await ensureMock();
+    return _mockNotifications.filter((n) => n.userId === userId && !n.isRead).length;
+  }
+  return request<number>("/api/notifications/user/" + userId + "/unread-count");
+}
+
+export async function markAsRead(notifId: number): Promise<void> {
+  if (USE_MOCK) {
+    await delay();
+    await ensureMock();
+    const n = _mockNotifications.find((n) => n.notifId === notifId);
+    if (n) n.isRead = true;
+    return;
+  }
+  await request<void>("/api/notifications/" + notifId + "/read", { method: "PUT" });
+}
+
+export async function markAllAsRead(userId: number): Promise<void> {
+  if (USE_MOCK) {
+    await delay();
+    await ensureMock();
+    _mockNotifications.forEach((n) => { if (n.userId === userId) n.isRead = true; });
+    return;
+  }
+  await request<void>("/api/notifications/user/" + userId + "/read-all", { method: "PUT" });
 }
