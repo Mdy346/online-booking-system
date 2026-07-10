@@ -5,7 +5,7 @@
  * 开发时 USE_MOCK = true   -> 用本地假数据（不依赖后端）
  * 联调时 USE_MOCK = false  -> 调用后端 Spring Boot API
  */
-const USE_MOCK = false;
+const USE_MOCK = true;
 
 /** 后端服务地址（后端默认端口 8080） */
 const API_BASE = "https://phony-darkened-hurry.ngrok-free.dev";

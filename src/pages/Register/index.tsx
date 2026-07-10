@@ -27,8 +27,8 @@ export default function RegisterPage() {
     try {
       await register(form);
       navigate("/login");
-    } catch {
-      setError("注册失败，请稍后重试");
+    } catch (e: any) {
+      setError(e.message || "注册失败");
     } finally {
       setLoading(false);
     }
