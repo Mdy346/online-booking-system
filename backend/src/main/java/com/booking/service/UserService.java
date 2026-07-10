@@ -19,8 +19,8 @@ import java.time.format.DateTimeFormatter;
 public class UserService extends ServiceImpl<UserMapper, User> {
 
     private final JwtUtil jwtUtil;
+    private final VerificationCodeService verificationCodeService;
 
-    /** Login: verify credentials and return JWT token. */
     public LoginResponse login(String username, String password) {
         User user = lambdaQuery()
                 .eq(User::getUsername, username)
@@ -35,16 +35,29 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         return new LoginResponse(token, toUserInfo(user));
     }
 
-    /** Register: create a new user account. */
     public LoginResponse register(RegisterRequest req) {
-        // Check duplicate username
-        boolean exists = lambdaQuery()
-                .eq(User::getUsername, req.getUsername())
-                .count() > 0;
-        if (exists) {
-            throw new BusinessException("该账号已被注册");
+        // 1. ?????
+        if (!verificationCodeService.verifyCode(req.getPhone(), req.getCode())) {
+            throw new BusinessException(400, "?????????");
         }
 
+        // 2. ?????????
+        boolean usernameExists = lambdaQuery()
+                .eq(User::getUsername, req.getUsername())
+                .count() > 0;
+        if (usernameExists) {
+            throw new BusinessException("???????");
+        }
+
+        // 3. ??????????
+        boolean phoneExists = lambdaQuery()
+                .eq(User::getPhone, req.getPhone())
+                .count() > 0;
+        if (phoneExists) {
+            throw new BusinessException("????????????");
+        }
+
+        // 4. ?????
         User user = new User();
         user.setUsername(req.getUsername());
         user.setPasswordHash(PasswordUtil.hash(req.getPassword()));
@@ -57,7 +70,6 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         return new LoginResponse(token, toUserInfo(user));
     }
 
-    /** Convert entity to response UserInfo. */
     private LoginResponse.UserInfo toUserInfo(User user) {
         return new LoginResponse.UserInfo(
                 user.getUserId(),
