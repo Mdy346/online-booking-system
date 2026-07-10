@@ -1,8 +1,8 @@
 ﻿import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CalendarDays, XCircle } from "lucide-react";
-import type { Appointment } from "../../types";
-import { getUserAppointments, cancelAppointment } from "../../api";
+import { CalendarDays, XCircle, Star, MessageSquare } from "lucide-react";
+import type { Appointment, Comment } from "../../types";
+import { getUserAppointments, cancelAppointment, submitComment } from "../../api";
 import { useAppStore } from "../../store";
 import { formatTime, formatPrice, statusLabel, statusColor } from "../../utils";
 
@@ -29,6 +29,26 @@ export default function MyAppointmentsPage() {
     setAppointments((prev) => prev.map((a) => (a.appointmentId === id ? { ...a, status: 4 } : a)));
   };
 
+  const [reviewModal, setReviewModal] = useState<{ appointmentId: number; star: number; content: string } | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmitReview = async () => {
+    if (!reviewModal || reviewModal.star === 0) return;
+    setSubmitting(true);
+    try {
+      await submitComment({
+        appointmentId: reviewModal.appointmentId,
+        ratingStar: reviewModal.star,
+        content: reviewModal.content,
+      });
+      setReviewModal(null);
+    } catch (e: any) {
+      alert(e.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-4 animate-pulse">
@@ -44,7 +64,8 @@ export default function MyAppointmentsPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <>
+      <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="flex items-center gap-3 mb-8">
         <CalendarDays className="w-7 h-7 text-blue-600" />
         <h1 className="text-2xl font-bold text-gray-900">我的预约</h1>
@@ -86,6 +107,15 @@ export default function MyAppointmentsPage() {
                       取消预约
                     </button>
                   )}
+                  {apt.status === 5 && (
+                    <button
+                      onClick={() => setReviewModal({ appointmentId: apt.appointmentId, star: 5, content: "" })}
+                      className="flex items-center gap-1 text-xs text-yellow-500 mt-2 hover:underline"
+                    >
+                      <Star className="w-3 h-3" />
+                      评价
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -93,5 +123,41 @@ export default function MyAppointmentsPage() {
         </div>
       )}
     </div>
+      {/* 评分弹窗 */}
+      {reviewModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm mx-4 p-6">
+            <div className="text-center mb-4">
+              <h2 className="text-lg font-bold text-gray-900">评价服务</h2>
+              <p className="text-sm text-gray-500 mt-1">请为本次服务打分</p>
+            </div>
+
+            <div className="flex justify-center gap-2 mb-4">
+              {[1, 2, 3, 4, 5].map((s) => (
+                <button key={s} onClick={() => setReviewModal({ ...reviewModal, star: s })}
+                  className="transition-colors">
+                  <Star className={`w-8 h-8 ${s <= reviewModal.star ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`} />
+                </button>
+              ))}
+            </div>
+
+            <textarea value={reviewModal.content}
+              onChange={(e) => setReviewModal({ ...reviewModal, content: e.target.value })}
+              placeholder="写下你的评价（选填）"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 resize-none" rows={3} />
+
+            <div className="flex justify-end gap-3 mt-4">
+              <button onClick={() => setReviewModal(null)}
+                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors">取消</button>
+              <button onClick={handleSubmitReview}
+                disabled={submitting || reviewModal.star === 0}
+                className="px-4 py-2 text-sm font-medium bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 disabled:opacity-50 transition-colors">
+                {submitting ? "提交中..." : "提交评价"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

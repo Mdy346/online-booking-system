@@ -1,7 +1,7 @@
 ﻿import { useEffect, useState } from "react";
 import { Clock, CheckCircle, XCircle } from "lucide-react";
 import type { Appointment } from "../../types";
-import { getMerchantAppointments, confirmAppointment, rejectAppointment } from "../../api";
+import { getMerchantAppointments, confirmAppointment, rejectAppointment, completeAppointment } from "../../api";
 import { useAppStore } from "../../store";
 import { formatTime, formatPrice, statusLabel, statusColor } from "../../utils";
 
@@ -27,6 +27,11 @@ export default function MerchantSchedule() {
   const handleReject = async (id: number) => {
     await rejectAppointment(id);
     setAppointments((prev) => prev.map((a) => (a.appointmentId === id ? { ...a, status: 3 } : a)));
+  };
+
+  const handleComplete = async (id: number) => {
+    await completeAppointment(id);
+    setAppointments((prev) => prev.map((a) => (a.appointmentId === id ? { ...a, status: 5 } : a)));
   };
 
   if (loading) {
@@ -107,6 +112,10 @@ export default function MerchantSchedule() {
                 <span className={`text-xs px-2 py-0.5 rounded-full border font-medium shrink-0 ${statusColor(apt.status)}`}>
                   {statusLabel(apt.status)}
                 </span>
+                  {apt.status === 2 && (
+                    <button onClick={() => handleComplete(apt.appointmentId)}
+                      className="text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 ml-2">完成</button>
+                  )}
               </div>
             ))}
           </div>
